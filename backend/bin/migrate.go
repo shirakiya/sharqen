@@ -3,8 +3,6 @@ package main
 import (
 	"fmt"
 
-	// "github.com/jinzhu/gorm"
-
 	"github.com/shirakiya/sharqen/backend/conf"
 	"github.com/shirakiya/sharqen/backend/database"
 	"github.com/shirakiya/sharqen/backend/model"

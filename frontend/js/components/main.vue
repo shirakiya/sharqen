@@ -152,7 +152,7 @@ export default {
   },
   methods: {
     fetchQuiz() {
-      return request.get('/quiz').then(res => {
+      request.get('/quiz/next').then(res => {
         this.$set(this, 'quiz', res.data.quiz);
         this.$set(this, 'query', res.data.query);
       }).catch(error => {
@@ -160,7 +160,7 @@ export default {
       });
     },
     search() {
-      return request.get('/search-result', {
+      request.get('/search-result', {
         question: this.query,
         choices: this.quiz.choices,
       }).then(res => {

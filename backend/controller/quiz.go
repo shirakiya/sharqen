@@ -56,7 +56,7 @@ func GetNextQuiz(tx *gorm.DB) model.Quiz {
 	return quiz
 }
 
-func RouteGetQuiz(c echo.Context) error {
+func RouteGetNextQuiz(c echo.Context) error {
 	tx := c.Get("tx").(*gorm.DB)
 
 	quiz := GetNextQuiz(tx)

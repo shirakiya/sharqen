@@ -70,6 +70,18 @@
               </div>
             </div>
 
+            <article class="error-message" v-if="existError">
+              <div class="notification is-danger">
+                <button class="delete" @click="closeError"></button>
+                <p v-if="error.statusText && error.status">
+                  {{ this.error.statusText }} [{{ this.error.status }}]
+                </p>
+                <p>
+                  {{ this.error.message }}
+                </p>
+              </div>
+            </article>
+
           </div>
 
           <div class="column">
@@ -141,9 +153,13 @@ export default {
         correct: null,  // index + 1 で持つ
       },
       searchResults: [],
+      error: {},
     };
   },
   computed: {
+    existError() {
+      return Object.keys(this.error).length !== 0;
+    },
     existAnswer() {
       return Object.keys(this.answer).length !== 0;
     },
@@ -158,19 +174,39 @@ export default {
     },
   },
   methods: {
+    showError(error) {
+      if (error.response) {
+        this.$set(this, 'error', {
+          message: error.message,
+          status: error.response.status,
+          statusText: error.response.statusText,
+        });
+        console.log(error.response);
+      } else {
+        this.$set(this, 'error', {
+          message: error.message,
+        });
+      }
+      console.log(error.request);
+    },
+    closeError() {
+      if (this.error) {
+        this.error = {};
+      }
+    },
     fetchQuiz() {
       request.get('/quiz/next').then(res => {
         this.$set(this, 'quiz', res.data.quiz);
         this.$set(this, 'query', res.data.query);
       }).catch(error => {
-        console.error(error);
+        this.showError(error);
       });
     },
     deleteQuestion() {
       request.del(`/quiz/${this.quiz.id}`).then(res => {
         this.fetchQuiz();
       }).catch(error => {
-        console.error(error);
+        this.showError(error);
       });
     },
     search() {
@@ -183,7 +219,7 @@ export default {
         this.$set(this, 'matchCounts', res.data.match_counts);
         this.$set(this, 'searchResults', res.data.search_results);
       }).catch(error => {
-        console.error(error);
+        this.showError(error);
       });
     },
     saveQuery() {
@@ -195,7 +231,7 @@ export default {
         // 次のクイズを取得する
         this.fetchQuiz();
       }).catch(error => {
-        console.error(error);
+        this.showError(error);
       });
     },
   },
@@ -205,5 +241,9 @@ export default {
 <style lang="scss" scoped>
 table {
   font-size: .9em;
+}
+
+.error-message {
+  margin-top: 1.5rem;
 }
 </style>

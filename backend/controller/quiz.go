@@ -2,6 +2,7 @@ package controller
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/jinzhu/gorm"
 	"github.com/labstack/echo"
@@ -70,4 +71,13 @@ func RouteGetNextQuiz(c echo.Context) error {
 	response := FormatToResponse(quiz, customQueryResponse.CustomQuery)
 
 	return c.JSON(http.StatusOK, response)
+}
+
+func RouteDeleteQuiz(c echo.Context) error {
+	id, _ := strconv.Atoi(c.Param("id"))
+
+	tx := c.Get("tx").(*gorm.DB)
+	tx.Delete(model.Quiz{}, "id = ?", id)
+
+	return c.NoContent(http.StatusNoContent)
 }

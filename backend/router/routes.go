@@ -10,6 +10,7 @@ func Init(e *echo.Echo) *echo.Echo {
 	e.GET("/quiz/next", controller.RouteGetNextQuiz)
 	e.GET("/search-result", controller.RouteGetSearchResult)
 	e.POST("/search-query", controller.RoutePostSearchQuery)
+	e.DELETE("/quiz/:id", controller.RouteDeleteQuiz)
 
 	return e
 }

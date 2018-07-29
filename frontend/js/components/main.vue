@@ -47,10 +47,17 @@
               <div class="field is-grouped is-grouped-right">
                 <div class="control">
                   <button
+                    class="button is-danger"
+                    :disabled="!query"
+                    @click="deleteQuestion"
+                  ><span class="icon"><i class="fas fa-trash-alt"></i></span>&nbsp;&nbsp;削除</button>
+                </div>
+                <div class="control">
+                  <button
                     class="button is-link"
                     :disabled="!query"
                     @click="search"
-                  >検索する</button>
+                  ><span class="icon"><i class="fas fa-search"></i></span>&nbsp;&nbsp;検索</button>
                 </div>
                 <div class="control">
                   <button
@@ -58,7 +65,7 @@
                     type="submit"
                     :disabled="!query"
                     @click="saveQuery"
-                  >登録する</button>
+                    ><span class="icon"><i class="fas fa-save"></i></span>&nbsp;&nbsp;登録</button>
                 </div>
               </div>
             </div>
@@ -92,7 +99,7 @@
             <div v-else>
               <div class="has-text-centered">
                 <h1 class="title has-text-grey">
-                  <span class="icon"><i class="fas fa-magic"></i></span> empty!
+                  <span class="icon"><i class="fas fa-magic"></i></span>&nbsp;&nbsp;empty!
                 </h1>
               </div>
             </div>
@@ -155,6 +162,13 @@ export default {
       request.get('/quiz/next').then(res => {
         this.$set(this, 'quiz', res.data.quiz);
         this.$set(this, 'query', res.data.query);
+      }).catch(error => {
+        console.error(error);
+      });
+    },
+    deleteQuestion() {
+      request.del(`/quiz/${this.quiz.id}`).then(res => {
+        this.fetchQuiz();
       }).catch(error => {
         console.error(error);
       });

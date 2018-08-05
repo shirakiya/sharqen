@@ -12,12 +12,8 @@ import (
 	"github.com/shirakiya/sharqen/backend/model"
 )
 
-func main() {
-	config := conf.GetConfig()
-	db := database.Init(config)
-	defer db.Close()
-
-	fh, err := os.Open(path.Join("seeds", "livequiz_dataset.csv"))
+func getCsvRows(filePath string) [][]string {
+	fh, err := os.Open(filePath)
 	if err != nil {
 		panic(err)
 	}
@@ -25,6 +21,18 @@ func main() {
 
 	reader := csv.NewReader(fh)
 	rows, err := reader.ReadAll()
+
+	if err != nil {
+		panic(err)
+	}
+
+	return rows
+}
+
+func main() {
+	config := conf.GetConfig()
+	db := database.Init(config)
+	defer db.Close()
 
 	tx := db.Begin()
 
@@ -34,11 +42,29 @@ func main() {
 		}
 	}()
 
+	path := path.Join("seeds", "livequiz_dataset.csv")
+	rows := getCsvRows(path)
+
+	var recordCount int
+	var notRecordCount int
+
 	for _, row := range rows[1:] {
 		var quiz model.Quiz
+		var question string
 		var choices []model.Choice
 		var num int
 		var correct int
+
+		question = row[3]
+
+		// skip creating record if same quiz is already exists.
+		var existQuiz model.Quiz
+		// search a quiz deleted softly to avoid creating duplicately
+		tx.Unscoped().Where(&model.Quiz{Question: question}).First(&existQuiz)
+		if existQuiz.ID != 0 {
+			notRecordCount++
+			continue
+		}
 
 		for _, choice_text := range row[4:8] {
 			if choice_text == "" {
@@ -57,12 +83,14 @@ func main() {
 		}
 
 		tx.Create(&quiz)
+		recordCount++
 	}
-	err = tx.Commit().Error
 
-	if err == nil {
+	if err := tx.Commit().Error; err == nil {
 		fmt.Println("Finish to create seed data.")
+		fmt.Println("new record:", recordCount)
+		fmt.Println("skip record:", notRecordCount)
 	} else {
-		fmt.Println(err)
+		panic(err)
 	}
 }

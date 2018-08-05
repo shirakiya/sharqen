@@ -64,7 +64,7 @@ func GetCustomQuery(question string, choices []string) CustomQueryResponse {
 		values.Add("choices[]", choice)
 	}
 
-	resp := get("http://localhost:5000/custom", values)
+	resp := get("http://127.0.0.1:5000/custom", values)
 	defer resp.Body.Close()
 
 	customQueryResponse := CustomQueryResponse{}
@@ -80,7 +80,7 @@ func GetSolveResult(question string, choices []string) SolveResultResponse {
 		values.Add("choices[]", choice)
 	}
 
-	resp := get("http://localhost:5000/solve", values)
+	resp := get("http://127.0.0.1:5000/solve", values)
 	defer resp.Body.Close()
 
 	solveResultResponse := SolveResultResponse{}

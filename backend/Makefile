@@ -9,5 +9,5 @@ migrate: bin/migrate.go
 seed: bin/seed.go
 	go run bin/seed.go
 
-run: bin/server.go
+run: bin/server.go migrate
 	go run bin/server.go

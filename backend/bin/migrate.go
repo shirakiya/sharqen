@@ -13,11 +13,23 @@ func main() {
 	db := database.Init(config)
 	defer db.Close()
 
-	db.AutoMigrate(
+	tx := db.Begin()
+
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	tx.AutoMigrate(
 		&model.Quiz{},
 		&model.Choice{},
 	)
-	db.Model(&model.Choice{}).AddForeignKey("quiz_id", "quizzes(id)", "CASCADE", "CASCADE")
+	tx.Model(&model.Choice{}).AddForeignKey("quiz_id", "quizzes(id)", "CASCADE", "CASCADE")
 
-	fmt.Println("Finish migration.")
+	if err := tx.Commit().Error; err == nil {
+		fmt.Println("Finish migration.")
+	} else {
+		panic(err)
+	}
 }

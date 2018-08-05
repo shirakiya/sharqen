@@ -8,7 +8,7 @@ module.exports = merge(common, {
     compress: false,
     host: '0.0.0.0',
     index: 'index.html',
-    port: 5001,
+    port: 1324,
     publicPath: '/',
   },
   mode: 'development',

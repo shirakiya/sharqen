@@ -1,0 +1,13 @@
+version: "3"
+services:
+  frontend:
+    container_name: sharqen-frontend
+    environment:
+      - NODE_ENV=development
+    image: node:8.11.3
+    ports:
+      - "1324:1324"
+    volumes:
+      - ./frontend:/app
+    working_dir: /app
+    command: bash -c "yarn install && yarn start"

@@ -194,6 +194,12 @@ export default {
         this.error = {};
       }
     },
+    clearSearchResult() {
+      this.answer = {};
+      this.choices = [];
+      this.matchCounts = {};
+      this.searchResults = [];
+    },
     fetchQuiz() {
       request.get('/quiz/next').then(res => {
         this.$set(this, 'quiz', res.data.quiz);
@@ -229,6 +235,7 @@ export default {
         search_query: this.query,
       }).then(res => {
         // 次のクイズを取得する
+        this.clearSearchResult();
         this.fetchQuiz();
       }).catch(error => {
         this.showError(error);

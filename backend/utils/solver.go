@@ -47,7 +47,7 @@ var client = &http.Client{Timeout: time.Duration(3) * time.Second}
 
 func buildUrl(endpoint string) string {
 	parsedUrl, _ := url.Parse(conf.GetConfig().SolverService.Url)
-	parsedUrl.Path = path.Join(parsedUrl.Path, "custom")
+	parsedUrl.Path = path.Join(parsedUrl.Path, endpoint)
 
 	return parsedUrl.String()
 }

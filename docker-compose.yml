@@ -11,34 +11,38 @@ services:
       - ./frontend:/app
     working_dir: /app
     command: bash -c "yarn install && yarn start"
-#   backend:
-#     build: ./backend
-#     container_name: sharqen-backend
-#     environment:
-#       - DB_HOST=sharqen-db
-#       - DB_USER=root
-#       - DB_PORT=3306
-#     networks:
-#       app:
-#     ports:
-#       - "1323:1323"
-#     volumes:
-#       - ./backend:/go/src/github.com/shirakiya/sharqen/backend
-#     command: bash -c "make run"
-#   mysql:
-#     container_name: sharqen-db
-#     image: mysql:5.6
-#     environment:
-#       MYSQL_DATABASE: sharqen
-#       MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
-#     networks:
-#       app:
-#     ports:
-#       - "3336:3306"
-#     volumes:
-#       - db_data:/var/lib/mysql
-#       - ./docker/mysql/conf.d:/etc/mysql/conf.d:ro
-# volumes:
-#   db_data:
-# networks:
-#   app:
+  backend:
+    build: ./backend
+    container_name: sharqen-backend
+    environment:
+      - DB_HOST=sharqen-db
+      - DB_USER=root
+      - DB_PORT=3306
+      - SOLVER_URL=http://shiraki-solver:5000/
+    networks:
+      app:
+      sharqen2shiraki_solver:
+    ports:
+      - "1323:1323"
+    volumes:
+      - ./backend:/go/src/github.com/shirakiya/sharqen/backend
+    command: bash -c "make runall"
+  mysql:
+    container_name: sharqen-db
+    image: mysql:5.6
+    environment:
+      MYSQL_DATABASE: sharqen
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    networks:
+      app:
+    ports:
+      - "3336:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./docker/mysql/conf.d:/etc/mysql/conf.d:ro
+volumes:
+  db_data:
+networks:
+  app:
+  sharqen2shiraki_solver:
+    external: true

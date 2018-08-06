@@ -4,7 +4,10 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/url"
+	"path"
 	"time"
+
+	"github.com/shirakiya/sharqen/backend/conf"
 )
 
 type (
@@ -42,6 +45,13 @@ type (
 
 var client = &http.Client{Timeout: time.Duration(3) * time.Second}
 
+func buildUrl(endpoint string) string {
+	parsedUrl, _ := url.Parse(conf.GetConfig().SolverService.Url)
+	parsedUrl.Path = path.Join(parsedUrl.Path, "custom")
+
+	return parsedUrl.String()
+}
+
 func get(url string, values url.Values) *http.Response {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -64,7 +74,7 @@ func GetCustomQuery(question string, choices []string) CustomQueryResponse {
 		values.Add("choices[]", choice)
 	}
 
-	resp := get("http://127.0.0.1:5000/custom", values)
+	resp := get(buildUrl("custom"), values)
 	defer resp.Body.Close()
 
 	customQueryResponse := CustomQueryResponse{}
@@ -80,7 +90,7 @@ func GetSolveResult(question string, choices []string) SolveResultResponse {
 		values.Add("choices[]", choice)
 	}
 
-	resp := get("http://127.0.0.1:5000/solve", values)
+	resp := get(buildUrl("solve"), values)
 	defer resp.Body.Close()
 
 	solveResultResponse := SolveResultResponse{}

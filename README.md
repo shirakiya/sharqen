@@ -7,11 +7,8 @@ UI for creating sharpen query.
 
 
 ## How to Run
-```
-# frontend
-$ docker-compose up
+Run with only docker-compose.
 
-# backend
-$ cd backend
-$ make run
+```
+$ docker-compose up
 ```

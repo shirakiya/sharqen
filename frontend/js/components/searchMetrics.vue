@@ -42,10 +42,6 @@
 <script>
 export default {
   props: {
-    answer: {
-      type: Object,
-      required: true,
-    },
     choices: {
       type: Array,
       required: true,

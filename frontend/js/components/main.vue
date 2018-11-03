@@ -88,13 +88,12 @@
             <div v-if="existAnswer">
               <!-- 検索結果(メトリクス) -->
               <div>
-                回答:（{{ answer.index + 1 }}）<strong>{{ answer.choice }}</strong>
+                回答:（{{ answerIndex + 1 }}）<strong>{{ answer }}</strong>
                 <span v-if="isCorrectAnswer" class="tag is-success">正答</span>
                 <span v-else class="tag is-danger">誤答</span>
               </div>
               <div>
                 <search-metrics
-                  :answer="answer"
                   :choices="choices"
                   :matchCounts="matchCounts"
                 ></search-metrics>
@@ -140,7 +139,7 @@ export default {
   },
   data() {
     return {
-      answer: {},
+      answer: null,
       choices: [],
       matchCounts: {},
       query: null,
@@ -161,14 +160,17 @@ export default {
       return Object.keys(this.error).length !== 0;
     },
     existAnswer() {
-      return Object.keys(this.answer).length !== 0;
+      return Boolean(this.answer);
     },
     correctChoice() {
       return this.quiz.choices[this.quiz.correct - 1] || '';
     },
+    answerIndex() {
+      return (this.answer) ? this.quiz.choices.indexOf(this.answer) : null;
+    },
     isCorrectAnswer() {
-      if (this.answer) {
-        return this.quiz.correct -1 === this.answer.index;
+      if (this.existAnswer) {
+        return this.quiz.correct === this.answerIndex + 1;
       }
       return false;
     },
@@ -195,7 +197,7 @@ export default {
       }
     },
     clearSearchResult() {
-      this.answer = {};
+      this.answer = null;
       this.choices = [];
       this.matchCounts = {};
       this.searchResults = [];
@@ -220,6 +222,7 @@ export default {
         question: this.query,
         choices: this.quiz.choices,
       }).then(res => {
+        console.log('search: res.data', res.data);
         this.$set(this, 'answer', res.data.answer);
         this.$set(this, 'choices', res.data.choices);
         this.$set(this, 'matchCounts', res.data.match_counts);

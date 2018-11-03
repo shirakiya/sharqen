@@ -21,7 +21,7 @@ func RouteGetSearchResult(c echo.Context) error {
 		return err
 	}
 
-	solveResultResponse := utils.GetSolveResult(params.Question, params.Choices)
+	solveResponse := utils.GetSolveResult(params.Question, params.Choices)
 
-	return c.JSON(http.StatusOK, solveResultResponse)
+	return c.JSON(http.StatusOK, solveResponse)
 }

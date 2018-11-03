@@ -1,7 +1,9 @@
 package utils
 
 import (
+	"bytes"
 	"encoding/json"
+	"log"
 	"net/http"
 	"net/url"
 	"path"
@@ -11,47 +13,52 @@ import (
 )
 
 type (
+	CustomQueryRequest struct {
+		Question string   `json:"question"`
+		Choices  []string `json:"choices"`
+		Solver   string   `json:"solver"`
+	}
+
 	CustomQueryResponse struct {
 		CustomQuery string `json:"custom_query"`
 	}
+)
 
-	Answer struct {
-		Choice string `json:"choice"`
-		Index  int    `json:"index"`
+type (
+	SolveRequest struct {
+		Question string   `json:"question"`
+		Choices  []string `json:"choices"`
+		Solver   string   `json:"solver"`
 	}
 
-	MatchCounts struct {
-		Basic           []int `json:"basic"`
-		Biased          []int `json:"biased"`
-		Bigram          []int `json:"Bigram"`
-		Transliteration []int `json:"transliteration"`
-	}
-
-	Choice struct {
-		Candidates   []string `json:"candidates"`
-		Normalized   string   `json:"normalized"`
-		Surface      []string `json:"surface"`
-		Unnormalized string   `json:"unnormalized"`
-	}
-
-	SolveResultResponse struct {
-		Answer        Answer      `json:"answer"`
-		Choices       []Choice    `json:"choices"`
-		MatchCounts   MatchCounts `json:"match_counts"`
-		Question      string      `json:"question"`
-		SearchResults []string    `json:"search_results"`
+	SolveResponse struct {
+		Answer  string `json:"answer"`
+		Choices []struct {
+			Candidates   []string `json:"candidates"`
+			Normalized   string   `json:"normalized"`
+			Surface      []string `json:"surface"`
+			Unnormalized string   `json:"unnormalized"`
+		} `json:"choices"`
+		MatchCounts struct {
+			Basic           []int `json:"basic"`
+			Biased          []int `json:"biased"`
+			Bigram          []int `json:"Bigram"`
+			Transliteration []int `json:"transliteration"`
+		} `json:"match_counts"`
+		SearchResults []string `json:"search_results"`
 	}
 )
 
 var client = &http.Client{Timeout: time.Duration(3) * time.Second}
 
-func buildUrl(endpoint string) string {
-	parsedUrl, _ := url.Parse(conf.GetConfig().SolverService.Url)
-	parsedUrl.Path = path.Join(parsedUrl.Path, endpoint)
+func buildURL(endpoint string) string {
+	parsedURL, _ := url.Parse(conf.GetConfig().SolverService.Url)
+	parsedURL.Path = path.Join(parsedURL.Path, endpoint)
 
-	return parsedUrl.String()
+	return parsedURL.String()
 }
 
+// get is not used anymore..
 func get(url string, values url.Values) *http.Response {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -64,17 +71,46 @@ func get(url string, values url.Values) *http.Response {
 		panic(err)
 	}
 
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		log.Printf("Response Status Code: %d", resp.StatusCode)
+		panic("Response had something error.")
+	}
+
 	return resp
 }
 
-func GetCustomQuery(question string, choices []string) CustomQueryResponse {
-	values := url.Values{}
-	values.Add("question", question)
-	for _, choice := range choices {
-		values.Add("choices[]", choice)
+func post(url string, paramsBytes []byte) *http.Response {
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(paramsBytes))
+	if err != nil {
+		panic(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
 	}
 
-	resp := get(buildUrl("custom"), values)
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		log.Printf("Response Status Code: %d", resp.StatusCode)
+		panic("Response had something error.")
+	}
+
+	return resp
+}
+
+// GetCustomQuery returns question processed by Solver.
+func GetCustomQuery(question string, choices []string) CustomQueryResponse {
+	url := buildURL("custom")
+
+	requestParams := CustomQueryRequest{
+		Question: question,
+		Choices:  choices,
+		Solver:   "shiraki",
+	}
+	requestParamsBytes, _ := json.Marshal(requestParams)
+
+	resp := post(url, requestParamsBytes)
 	defer resp.Body.Close()
 
 	customQueryResponse := CustomQueryResponse{}
@@ -83,18 +119,22 @@ func GetCustomQuery(question string, choices []string) CustomQueryResponse {
 	return customQueryResponse
 }
 
-func GetSolveResult(question string, choices []string) SolveResultResponse {
-	values := url.Values{}
-	values.Add("question", question)
-	for _, choice := range choices {
-		values.Add("choices[]", choice)
-	}
+// GetSolveResult returns answer from Solver.
+func GetSolveResult(question string, choices []string) SolveResponse {
+	url := buildURL("solve")
 
-	resp := get(buildUrl("solve"), values)
+	requestParams := SolveRequest{
+		Question: question,
+		Choices:  choices,
+		Solver:   "shiraki",
+	}
+	requestParamsBytes, _ := json.Marshal(requestParams)
+
+	resp := post(url, requestParamsBytes)
 	defer resp.Body.Close()
 
-	solveResultResponse := SolveResultResponse{}
-	json.NewDecoder(resp.Body).Decode(&solveResultResponse)
+	solveResponse := SolveResponse{}
+	json.NewDecoder(resp.Body).Decode(&solveResponse)
 
-	return solveResultResponse
+	return solveResponse
 }

@@ -4,7 +4,7 @@ services:
     container_name: sharqen-frontend
     environment:
       - NODE_ENV=development
-    image: node:8.11.3
+    image: node:8.12
     ports:
       - "1324:1324"
     volumes:
@@ -18,10 +18,10 @@ services:
       - DB_HOST=sharqen-db
       - DB_USER=root
       - DB_PORT=3306
-      - SOLVER_URL=http://shiraki-solver:5000/
+      - SOLVER_URL=http://solver:5002/
     networks:
       app:
-      sharqen2shiraki_solver:
+      solver:
     ports:
       - "1323:1323"
     volumes:
@@ -44,5 +44,5 @@ volumes:
   db_data:
 networks:
   app:
-  sharqen2shiraki_solver:
+  solver:
     external: true
